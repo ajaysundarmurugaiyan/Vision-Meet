@@ -1,0 +1,8 @@
+{
+  "name": "VisionMeet - Video Meeting & File Sharing",
+  "description": "A React-based video meeting application inspired by Google Meet, featuring local file sharing (video, image, movie) capabilities. This frontend demo mocks multi-user interactions and focuses on the UI/UX of video conferencing and file sharing.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

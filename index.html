@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VisionMeet</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Base styles */
+    body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1f2937; color: #f3f4f6; }
+    
+    /* Custom Scrollbar Styles */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #374151; }
+    ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+    
+    /* Z-index layering (Keep these consistent with your component logic) */
+    .z-\[100\] { z-index: 100 !important; } /* Modals (Highest priority) */
+    .z-\[70\] { z-index: 70 !important; } /* ChatWindow, Chat Toggle Button */
+    .z-\[60\] { z-index: 60 !important; } /* Host meeting ID bar, Media Permission Error Bar */
+    .z-\[50\] { z-index: 50 !important; } /* MeetingControls */
+
+    /* Custom class for media error if needed for specific stacking */
+    .media-error-bar { z-index: 65 !important; } 
+  </style>
+  
+  <script type="importmap">
+    {
+      "imports": {
+        "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+        "react/": "https://esm.sh/react@^19.1.0/",
+        "react": "https://esm.sh/react@^19.1.0",
+        "uuid": "https://esm.sh/uuid@9.0.1",
+        "@google/genai": "https://esm.sh/@google/genai@^1.3.0"
+      }
+    }
+  </script>
+  
+  <link rel="stylesheet" href="/index.css">
+</head>
+<body>
+  <noscript>You need to enable JavaScript to run this app.</noscript>
+  <div id="root"></div>
+  <script type="module" src="/index.jsx"></script>
+</body>
+</html>
