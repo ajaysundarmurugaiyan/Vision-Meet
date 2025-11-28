@@ -91,6 +91,47 @@ const MeetingPage = () => {
 
   }, [sharedMedia?.playbackState]);
 
+  // Effect to handle video source and stream capture
+  useEffect(() => {
+    if (!sharedMedia || !videoRef.current) return;
+
+    const videoEl = videoRef.current;
+
+    if (sharedMedia.sharerId === userId) {
+      // Local sharer
+      if (videoEl.src !== sharedMedia.url) {
+        videoEl.src = sharedMedia.url;
+      }
+
+      if (!sharedMedia.stream) {
+        const capture = () => {
+          try {
+            const stream = videoEl.captureStream ? videoEl.captureStream() : (videoEl.mozCaptureStream ? videoEl.mozCaptureStream() : null);
+            if (stream) {
+              shareVideoStream(stream);
+            } else {
+              console.error("captureStream not supported");
+            }
+          } catch (e) {
+            console.error("Error capturing stream", e);
+          }
+        };
+
+        if (videoEl.readyState >= 1) {
+          capture();
+        } else {
+          videoEl.onloadedmetadata = capture;
+        }
+      }
+    } else {
+      // Remote viewer
+      const sharer = participants.find(p => p.id === sharedMedia.sharerId);
+      if (sharer?.stream && videoEl.srcObject !== sharer.stream) {
+        videoEl.srcObject = sharer.stream;
+      }
+    }
+  }, [sharedMedia, userId, participants, shareVideoStream]);
+
   const handleVideoPlay = () => {
     if (isRemoteUpdate.current) return;
     if (sharedMedia?.sharerId !== userId) return; // Only sharer controls playback? Or everyone? Let's allow everyone or just sharer. Usually just sharer.
@@ -338,47 +379,12 @@ const MeetingPage = () => {
               </div>
               <div className="relative w-full h-full flex-1 min-h-0 bg-black rounded-xl overflow-hidden group">
                 <video
-                  ref={(el) => {
-                    videoRef.current = el;
-                    if (el) {
-                      if (sharedMedia.sharerId === userId) {
-                        // Local sharer: use URL
-                        if (el.src !== sharedMedia.url) {
-                          el.src = sharedMedia.url;
-                        }
-                        // Capture stream if not already captured
-                        if (!sharedMedia.stream && el.readyState >= 1) { // HAVE_METADATA
-                          try {
-                            const stream = el.captureStream();
-                            shareVideoStream(stream);
-                          } catch (e) {
-                            console.error("Error capturing stream from video", e);
-                          }
-                        }
-                      } else {
-                        // Remote viewer: use WebRTC stream
-                        const sharer = participants.find(p => p.id === sharedMedia.sharerId);
-                        if (sharer?.stream && el.srcObject !== sharer.stream) {
-                          el.srcObject = sharer.stream;
-                        }
-                      }
-                    }
-                  }}
+                  ref={videoRef}
                   key={sharedMedia.id} // Key ensures re-render if media changes
                   controls={sharedMedia.sharerId === userId}
                   onPlay={handleVideoPlay}
                   onPause={handleVideoPause}
                   onSeeked={handleVideoSeek}
-                  onLoadedMetadata={(e) => {
-                    if (sharedMedia.sharerId === userId && !sharedMedia.stream) {
-                      try {
-                        const stream = e.target.captureStream();
-                        shareVideoStream(stream);
-                      } catch (err) {
-                        console.error("Error capturing stream on loadedmetadata", err);
-                      }
-                    }
-                  }}
                   autoPlay
                   playsInline
                   className="w-full h-full object-contain"
