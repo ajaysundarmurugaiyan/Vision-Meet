@@ -89,7 +89,35 @@ const MeetingPage = () => {
       isRemoteUpdate.current = false;
     }, 500);
 
-  }, [sharedMedia?.playbackState]);
+  }, [sharedMedia, userId, participants, shareVideoStream]);
+
+  const handleScreenShare = async () => {
+    if (currentSharerId && currentSharerId !== userId) return;
+
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+
+      const mediaPayload = {
+        id: 'screen-share-' + Date.now(),
+        type: 'screen',
+        name: 'Screen Share',
+        sharerId: userId,
+        sharerName: userName,
+        isLocal: true,
+        stream: stream
+      };
+
+      await shareMediaFile(mediaPayload);
+      await shareVideoStream(stream);
+
+      stream.getVideoTracks()[0].onended = () => {
+        stopMediaShare();
+      };
+
+    } catch (e) {
+      console.error("Screen share error", e);
+    }
+  };
 
   // Effect to handle video source and stream capture
   useEffect(() => {
@@ -99,11 +127,17 @@ const MeetingPage = () => {
 
     if (sharedMedia.sharerId === userId) {
       // Local sharer
-      if (videoEl.src !== sharedMedia.url) {
-        videoEl.src = sharedMedia.url;
+      if (sharedMedia.type === 'screen') {
+        if (videoEl.srcObject !== sharedMedia.stream) {
+          videoEl.srcObject = sharedMedia.stream;
+        }
+      } else {
+        if (videoEl.src !== sharedMedia.url) {
+          videoEl.src = sharedMedia.url;
+        }
       }
 
-      if (!sharedMedia.stream) {
+      if (!sharedMedia.stream && sharedMedia.type !== 'screen') {
         const capture = () => {
           try {
             const stream = videoEl.captureStream ? videoEl.captureStream() : (videoEl.mozCaptureStream ? videoEl.mozCaptureStream() : null);
@@ -244,6 +278,16 @@ const MeetingPage = () => {
 
     if (!isVideoType && !hasVideoExtension) {
       setMovieError('Please select a valid video file.');
+      inputEl.value = null;
+      return;
+    }
+
+    // Check for risky formats that browsers don't play natively
+    const riskyExtensions = ['.mkv', '.avi', '.wmv'];
+    const isRisky = riskyExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+
+    if (isRisky) {
+      setMovieError("This video format (.MKV/.AVI) is not supported by browsers. Please open the file in your video player (e.g. VLC) and use the 'Share Screen' button (purple monitor icon) below.");
       inputEl.value = null;
       return;
     }
@@ -473,6 +517,7 @@ const MeetingPage = () => {
         onLeaveCall={handleLeaveCall}
         onShareMovie={handleMovieShareClick}
         onStopMovieShare={() => stopMediaShare()}
+        onShareScreen={handleScreenShare}
         isCurrentUserSharing={sharedMedia?.sharerId === userId}
         movieShareDisabled={!!sharedMedia && sharedMedia.sharerId !== userId}
         isUploadingMovie={isUploadingMovie}
