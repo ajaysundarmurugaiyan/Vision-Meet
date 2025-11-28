@@ -364,9 +364,22 @@ const MeetingProvider = ({ children }) => {
         if (videoTrack) {
           const videoSender = peerConnection.getSenders().find(s => s.track?.kind === 'video');
           if (videoSender) {
-            videoSender.replaceTrack(videoTrack);
+            videoSender.replaceTrack(videoTrack).then(() => {
+              // Enhance quality after replacing track
+              const params = videoSender.getParameters();
+              if (!params.encodings) params.encodings = [{}];
+              params.encodings[0].maxBitrate = 5000000; // 5 Mbps
+              params.encodings[0].scaleResolutionDownBy = 1.0;
+              videoSender.setParameters(params).catch(e => console.warn("Could not set video parameters", e));
+            });
           } else {
-            peerConnection.addTrack(videoTrack, stream);
+            const sender = peerConnection.addTrack(videoTrack, stream);
+             // Enhance quality
+            const params = sender.getParameters();
+            if (!params.encodings) params.encodings = [{}];
+            params.encodings[0].maxBitrate = 5000000; // 5 Mbps
+            params.encodings[0].scaleResolutionDownBy = 1.0;
+            sender.setParameters(params).catch(e => console.warn("Could not set video parameters", e));
           }
         }
 
