@@ -106,14 +106,23 @@ const MeetingPage = () => {
       if (!sharedMedia.stream) {
         const capture = () => {
           try {
-            const stream = videoEl.captureStream ? videoEl.captureStream(60) : (videoEl.mozCaptureStream ? videoEl.mozCaptureStream(60) : null);
+            // Check for support
+            if (!videoEl.captureStream && !videoEl.mozCaptureStream) {
+              console.error("captureStream not supported on this browser");
+              setMovieError("Screen sharing is not supported on this browser/device. Please try a desktop browser.");
+              return;
+            }
+
+            const stream = videoEl.captureStream ? videoEl.captureStream(30) : (videoEl.mozCaptureStream ? videoEl.mozCaptureStream(30) : null);
             if (stream) {
               shareVideoStream(stream);
             } else {
-              console.error("captureStream not supported");
+              console.error("captureStream returned null");
+              setMovieError("Failed to capture video stream.");
             }
           } catch (e) {
             console.error("Error capturing stream", e);
+            setMovieError("Error starting video share: " + e.message);
           }
         };
 
