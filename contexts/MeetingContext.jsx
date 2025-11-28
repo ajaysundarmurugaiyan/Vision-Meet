@@ -368,9 +368,10 @@ const MeetingProvider = ({ children }) => {
               // Enhance quality after replacing track
               const params = videoSender.getParameters();
               if (!params.encodings) params.encodings = [{}];
-              params.encodings[0].maxBitrate = 8000000; // 8 Mbps
+              params.encodings[0].maxBitrate = 50000000; // 50 Mbps
               params.encodings[0].scaleResolutionDownBy = 1.0;
               params.encodings[0].networkPriority = 'high';
+              params.encodings[0].priority = 'high';
               videoSender.setParameters(params).catch(e => console.warn("Could not set video parameters", e));
             });
           } else {
@@ -378,9 +379,10 @@ const MeetingProvider = ({ children }) => {
             // Enhance quality
             const params = sender.getParameters();
             if (!params.encodings) params.encodings = [{}];
-            params.encodings[0].maxBitrate = 8000000; // 8 Mbps
+            params.encodings[0].maxBitrate = 50000000; // 50 Mbps
             params.encodings[0].scaleResolutionDownBy = 1.0;
             params.encodings[0].networkPriority = 'high';
+            params.encodings[0].priority = 'high';
             sender.setParameters(params).catch(e => console.warn("Could not set video parameters", e));
           }
         }
