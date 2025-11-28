@@ -106,7 +106,7 @@ const MeetingPage = () => {
       if (!sharedMedia.stream) {
         const capture = () => {
           try {
-            const stream = videoEl.captureStream ? videoEl.captureStream() : (videoEl.mozCaptureStream ? videoEl.mozCaptureStream() : null);
+            const stream = videoEl.captureStream ? videoEl.captureStream(60) : (videoEl.mozCaptureStream ? videoEl.mozCaptureStream(60) : null);
             if (stream) {
               shareVideoStream(stream);
             } else {
