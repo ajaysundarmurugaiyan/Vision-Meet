@@ -237,8 +237,13 @@ const MeetingPage = () => {
     const file = inputEl.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('video/')) {
-      setMovieError('Please select a video file.');
+    // Expanded validation to include more video formats
+    const validExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.mkv', '.avi', '.wmv', '.m4v'];
+    const isVideoType = file.type.startsWith('video/');
+    const hasVideoExtension = validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+
+    if (!isVideoType && !hasVideoExtension) {
+      setMovieError('Please select a valid video file.');
       inputEl.value = null;
       return;
     }
@@ -385,6 +390,10 @@ const MeetingPage = () => {
                   onPlay={handleVideoPlay}
                   onPause={handleVideoPause}
                   onSeeked={handleVideoSeek}
+                  onError={(e) => {
+                    console.error("Video playback error", e);
+                    setMovieError("Unable to play this video format. Please try a standard format like MP4 or WebM.");
+                  }}
                   autoPlay
                   playsInline
                   className="w-full h-full object-contain"
@@ -451,7 +460,7 @@ const MeetingPage = () => {
       <input
         ref={fileInputRef}
         type="file"
-        accept="video/*"
+        accept="video/*,.mkv,.avi,.mov,.mp4,.webm,.ogg,.wmv,.m4v"
         onChange={handleFileSelected}
         className="hidden"
       />
