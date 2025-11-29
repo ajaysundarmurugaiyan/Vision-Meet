@@ -72,8 +72,19 @@ const meetingReducer = (state, action) => {
         ),
       };
     }
-    case 'SET_PARTICIPANTS':
-      return { ...state, participants: action.payload };
+    case 'SET_PARTICIPANTS': {
+      const newParticipants = action.payload;
+      const mergedParticipants = newParticipants.map(newP => {
+        const existingP = state.participants.find(p => p.id === newP.id);
+        return {
+          ...newP,
+          stream: existingP?.stream || null,
+          isMicMuted: existingP?.isMicMuted || false,
+          isCameraOff: existingP?.isCameraOff || false
+        };
+      });
+      return { ...state, participants: mergedParticipants };
+    }
     case 'UPDATE_PARTICIPANT_STREAM': {
       const { participantId, stream } = action.payload;
       return {
