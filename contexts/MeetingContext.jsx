@@ -358,6 +358,9 @@ const MeetingProvider = ({ children }) => {
     const videoTrack = stream.getVideoTracks()[0];
     const audioTrack = stream.getAudioTracks()[0];
 
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const maxBitrate = isMobile ? 2000000 : 50000000; // 2 Mbps for mobile, 50 Mbps for others
+
     Object.entries(state.peerConnections).forEach(([peerId, peerConnection]) => {
       try {
         // Replace video track
@@ -368,7 +371,7 @@ const MeetingProvider = ({ children }) => {
               // Enhance quality after replacing track
               const params = videoSender.getParameters();
               if (!params.encodings) params.encodings = [{}];
-              params.encodings[0].maxBitrate = 2500000; // 2.5 Mbps
+              params.encodings[0].maxBitrate = maxBitrate;
               params.encodings[0].scaleResolutionDownBy = 1.0;
               params.encodings[0].networkPriority = 'high';
               videoSender.setParameters(params).catch(e => console.warn("Could not set video parameters", e));
@@ -378,7 +381,7 @@ const MeetingProvider = ({ children }) => {
             // Enhance quality
             const params = sender.getParameters();
             if (!params.encodings) params.encodings = [{}];
-            params.encodings[0].maxBitrate = 2500000; // 2.5 Mbps
+            params.encodings[0].maxBitrate = maxBitrate;
             params.encodings[0].scaleResolutionDownBy = 1.0;
             params.encodings[0].networkPriority = 'high';
             sender.setParameters(params).catch(e => console.warn("Could not set video parameters", e));
