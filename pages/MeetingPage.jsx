@@ -265,6 +265,14 @@ const MeetingPage = () => {
       return;
     }
 
+    // Check for capture support before starting share
+    const videoEl = document.createElement('video');
+    if (!videoEl.captureStream && !videoEl.mozCaptureStream) {
+      setMovieError("Screen sharing is not supported on this browser/device. Please try a desktop browser.");
+      inputEl.value = null;
+      return;
+    }
+
     setMovieError(null);
 
     try {
