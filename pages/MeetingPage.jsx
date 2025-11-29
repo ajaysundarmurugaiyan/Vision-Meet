@@ -37,6 +37,7 @@ const MeetingPage = () => {
   const localPreviewRef = useRef(null);
   const videoRef = useRef(null);
   const isRemoteUpdate = useRef(false);
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
 
   const hostParticipant = useMemo(() => participants.find((p) => p.isHost), [participants]);
   const hostName = hostParticipant?.name || 'Host';
@@ -79,9 +80,15 @@ const MeetingPage = () => {
     }
 
     if (isPlaying && video.paused) {
-      video.play().catch(e => console.log('Autoplay blocked:', e));
+      video.play()
+        .then(() => setAutoplayBlocked(false))
+        .catch(e => {
+          console.log('Autoplay blocked:', e);
+          setAutoplayBlocked(true);
+        });
     } else if (!isPlaying && !video.paused) {
       video.pause();
+      setAutoplayBlocked(false);
     }
 
     // Reset flag after a short delay to allow events to fire without triggering loop
@@ -390,7 +397,7 @@ const MeetingPage = () => {
                 <video
                   ref={videoRef}
                   key={sharedMedia.id} // Key ensures re-render if media changes
-                  controls={sharedMedia.sharerId === userId}
+                  controls={true}
                   onPlay={handleVideoPlay}
                   onPause={handleVideoPause}
                   onSeeked={handleVideoSeek}
@@ -400,6 +407,25 @@ const MeetingPage = () => {
                 >
                   Your browser does not support the video tag.
                 </video>
+
+                {autoplayBlocked && (
+                  <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/60 backdrop-blur-sm">
+                    <button
+                      onClick={() => {
+                        if (videoRef.current) {
+                          videoRef.current.play().catch(console.error);
+                          setAutoplayBlocked(false);
+                        }
+                      }}
+                      className="px-6 py-3 bg-blue-600 text-white rounded-full font-bold shadow-lg hover:bg-blue-500 transition-all transform hover:scale-105 flex items-center gap-2"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                      </svg>
+                      Tap to Play Movie
+                    </button>
+                  </div>
+                )}
 
                 {/* Fullscreen Button Overlay */}
                 <button
