@@ -370,7 +370,7 @@ const MeetingProvider = ({ children }) => {
     const audioTrack = stream.getAudioTracks()[0];
 
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const maxBitrate = isMobile ? 2000000 : 50000000; // 2 Mbps for mobile, 50 Mbps for others
+    const maxBitrate = isMobile ? 1000000 : 5000000; // 1 Mbps for mobile, 5 Mbps for others
 
     Object.entries(state.peerConnections).forEach(([peerId, peerConnection]) => {
       try {
